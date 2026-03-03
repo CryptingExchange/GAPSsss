@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>GAPS — полный детейлинг в Назрани</title>
+  <!-- Font Awesome 6 (монохромные иконки) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    }
+
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --red: #FF0000;
+      --red-dark: #cc0000;
+      --gray-dark: #111111;
+      --gray-light: #222222;
+      --header-bg: rgba(0, 0, 0, 0.85);
+      --border-radius-card: 24px;
+      --border-radius-btn: 60px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
+    body {
+      background-color: var(--black);
+      color: var(--white);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    body.menu-open {
+      overflow: hidden;
+    }
+
+    /* Прелоадер */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      background-color: var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    #preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preloader-title {
+      font-size: clamp(4rem, 20vw, 10rem);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: var(--red);
+      text-shadow: 0 0 20px rgba(255,0,0,0.7);
+      margin-bottom: 2rem;
+      line-height: 1;
+    }
+
+    .progress-bar {
+      width: min(300px, 70%);
+      height: 6px;
+      background-color: #222;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background-color: var(--red);
+      border-radius: 10px;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 20px var(--red);
+    }
+
+    /* Шапка */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 1rem 5%;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-center {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--red);
+      text-transform: uppercase;
+      white-space: nowrap;
+      text-shadow: 0 0 15px rgba(255,0,0,0.6);
+    }
+
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 32px;
+      height: 24px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      z-index: 1100;
+    }
+
+    .menu-toggle span {
+      width: 100%;
+      height: 3px;
+      background-color: var(--white);
+      border-radius: 3px;
+      transition: 0.3s;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 3rem;
+      margin-left: auto;
+    }
+
+    .nav-menu a {
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.2rem;
+      letter-spacing: 0.5px;
+      padding: 0.5rem 0;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+
+    .nav-menu a:hover,
+    .nav-menu a.active {
+      color: var(--red);
+      border-bottom-color: var(--red);
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: flex;
+      }
+      .logo-center {
+        font-size: 1.8rem;
+      }
+      .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 75%;
+        max-width: 320px;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.98);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 2.5rem;
+        transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+        border-left: 2px solid var(--red);
+        z-index: 1050;
+      }
+      .nav-menu.active {
+        right: 0;
+      }
+      .nav-menu a {
+        font-size: 2rem;
+      }
+      .menu-toggle.active span:nth-child(1) {
+        transform: translateY(10px) rotate(45deg);
+        background-color: var(--red);
+      }
+      .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+      }
+      .menu-toggle.active span:nth-child(3) {
+        transform: translateY(-10px) rotate(-45deg);
+        background-color: var(--red);
+      }
+    }
+
+    body.menu-open main {
+      filter: blur(6px);
+      transition: filter 0.4s;
+      pointer-events: none;
+    }
+
+    main {
+      transition: filter 0.4s;
+    }
+
+    /* Секции */
+    section {
+      padding: 6rem 2rem;
+      background-color: var(--black);
+      position: relative;
+      scroll-margin-top: 90px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Герой (фоновая картинка — вы можете заменить ссылку на свою) */
+    #home {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,0,0,0.7)), url(./glavniy.jpg) center/cover no-repeat;
+      background-attachment: fixed;
+      padding-top: 5rem;
+    }
+
+    #home h1 {
+      font-size: clamp(3rem, 12vw, 7rem);
+      font-weight: 900;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    #home .subtitle {
+      font-size: 1.8rem;
+      color: #ddd;
+      max-width: 800px;
+      margin: 2rem auto;
+      font-weight: 300;
+    }
+
+    .hero-address {
+      font-size: 1.4rem;
+      color: #aaa;
+      margin-bottom: 2rem;
+
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 1rem 3rem;
+      border: 2px solid var(--red);
+      background: transparent;
+      color: var(--white);
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: 0.3s;
+      border-radius: var(--border-radius-btn);
+    }
+
+    .btn:hover {
+      background: var(--red);
+      color: var(--black);
+      box-shadow: 0 0 30px rgba(255,0,0,0.5);
+    }
+
+    /* Заголовки с эффектом печати */
+    h2 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 3rem;
+      text-transform: uppercase;
+      border-left: 10px solid var(--red);
+      padding-left: 2rem;
+      letter-spacing: 2px;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2 span {
+      color: var(--red);
+    }
+
+    .typing-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .typing-text {
+      position: relative;
+      z-index: 2;
+    }
+
+    .typing-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--typing-width, 0%);
+      height: 100%;
+      background-color: var(--black);
+      z-index: 3;
+      transition: width 1s steps(30, end);
+      pointer-events: none;
+    }
+
+    #about .typing-container::after {
+      background-color: var(--gray-dark);
+    }
+
+    /* Услуги */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .service-card {
+      background: var(--gray-dark);
+      padding: 2rem 1.2rem;
+      border: 1px solid #333;
+      transition: 0.3s;
+      text-align: center;
+      border-radius: var(--border-radius-card);
+    }
+
+    .service-card:hover {
+      border-color: var(--red);
+      transform: translateY(-8px);
+      box-shadow: 0 20px 30px rgba(255,0,0,0.15);
+    }
+
+    .service-card i {
+      font-size: 3rem;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+
+    .service-card h3 {
+      font-size: 1.6rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .service-card p {
+      color: #aaa;
+      font-size: 0.95rem;
+    }
+
+    /* Портфолио (картинки заменены на стабильные с Pexels) */
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .portfolio-item {
+      position: relative;
+      overflow: hidden;
+      height: 300px;
+      border: 1px solid #222;
+      border-radius: var(--border-radius-card);
+    }
+
+    .portfolio-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s;
+    }
+
+    .portfolio-item:hover img {
+      transform: scale(1.1);
+    }
+
+    .portfolio-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(255,0,0,0.8), transparent);
+      display: flex;
+      align-items: flex-end;
+      padding: 1.5rem;
+      opacity: 0;
+      transition: 0.3s;
+      border-radius: var(--border-radius-card);
+    }
+
+    .portfolio-item:hover .portfolio-overlay {
+      opacity: 1;
+    }
+
+    .portfolio-overlay span {
+      color: white;
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* О нас */
+    #about {
+      background: var(--gray-dark);
+    }
+
+    .about-text {
+      font-size: 1.3rem;
+      max-width: 1000px;
+      margin: 2rem 0 2rem;
+      color: #ccc;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .feature-item {
+      flex: 1 1 180px;
+      border-left: 4px solid var(--red);
+      padding-left: 1.5rem;
+    }
+
+    .feature-item i {
+      font-size: 2.5rem;
+      color: var(--red);
+      margin-bottom: 0.8rem;
+    }
+
+    .feature-item h4 {
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .feature-item p {
+      color: #aaa;
+    }
+
+    /* Контакты */
+    .contacts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .contact-card {
+      background: #0c0c0c;
+      border: 1px solid #222;
+      padding: 2rem 1.2rem;
+      text-align: center;
+      border-radius: var(--border-radius-card);
+      transition: 0.3s;
+    }
+
+    .contact-card:hover {
+      border-color: var(--red);
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(255,0,0,0.2);
+    }
+
+    .contact-card i {
+      font-size: 2.8rem;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+
+    .contact-card h4 {
+      font-size: 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .contact-card a, .contact-card span {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: 0.2s;
+      display: block;
+    }
+
+    .contact-card a:hover {
+      color: var(--red);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .social-links a {
+      color: var(--white);
+      font-size: 2.5rem;
+      transition: 0.2s;
+    }
+
+    .social-links a:hover {
+      color: var(--red);
+      transform: scale(1.2);
+    }
+
+    /* Подвал */
+    footer {
+      background: #0a0a0a;
+      border-top: 1px solid #222;
+      padding: 4rem 2rem 2rem;
+    }
+
+    .footer-grid {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3rem;
+    }
+
+    .footer-col h4 {
+      color: var(--red);
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+      text-transform: uppercase;
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col li {
+      margin-bottom: 0.7rem;
+    }
+
+    .footer-col a {
+      color: #aaa;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--red);
+    }
+
+    .footer-col p {
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2.5rem;
+      margin-top: 2.5rem;
+      border-top: 1px solid #222;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 480px) {
+      section {
+        padding: 4rem 1rem;
+      }
+      h2 {
+        font-size: 2.5rem;
+      }
+    }
+
+    #home h1 {
+  margin-bottom: 4rem; /* отступ от заголовка до следующего блока */
+}
+
+#home .btn {
+  margin-top: 4rem; /* отступ сверху кнопки */
+}
+
+    .red {
+      color: var(--red);
+    }
+  </style>
+</head>
+<body>
+  <!-- Прелоадер -->
+  <div id="preloader">
+    <div class="preloader-title">GAPS</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Шапка -->
+  <header>
+    <button class="menu-toggle" id="menuToggle" aria-label="Меню">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="logo-center">GAPS</div>
+    <nav class="nav-menu" id="navMenu">
+      <a href="#home" class="nav-link">ГЛАВНАЯ</a>
+      <a href="#services" class="nav-link">УСЛУГИ</a>
+      <a href="#portfolio" class="nav-link">РАБОТЫ</a>
+      <a href="#about" class="nav-link">О НАС</a>
+      <a href="#contacts" class="nav-link">КОНТАКТЫ</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Герой (здесь вы можете заменить фоновую картинку на свою, изменив URL в style) -->
+    <section id="home">
+      <div class="container" style="text-align: center;">
+        <h1>GAPS <span class="red">ДЕТЕЙЛИНГ</span></h1>
+        <div class="subtitle"></div>
+        <div class="hero-address"><i></i></div>
+        <a href="#contacts" class="btn">Записаться</a>
+      </div>
+    </section>
+
+    <!-- Услуги -->
+    <section id="services">
+      <div class="container">
+        <h2 class="typing-title"><span class="typing-container"><span class="typing-text"># УСЛУГИ</span></span></h2>
+        <div class="services-grid">
+          <div class="service-card">
+            <i class="fas fa-brush"></i>
+            <h3>Полировка кузова</h3>
+            <p>Восстановление лака, удаление царапин, маскировка дефектов. Любой сложности.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-gem"></i>
+            <h3>Керамика / защита</h3>
+            <p>Нанесение керамических покрытий, жидкого стекла. Долговременная защита.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-wind"></i>
+            <h3>Химчистка салона</h3>
+            <p>Полная чистка салона, багажника, подкапотного. Удаление запахов.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-car-side"></i>
+            <h3>Удаление вмятин (PDR)</h3>
+            <p>Вытягивание вмятин без покраски, аккуратное восстановление геометрии.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-volume-off"></i>
+            <h3>Шумоизоляция</h3>
+            <p>Комплексная шумоизоляция салона, арок, дверей. Комфорт в каждой поездке.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-film"></i>
+            <h3>Оклейка плёнками</h3>
+            <p>Полиуретан, винил, защитные и матовые плёнки. Полная или частичная.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-sun"></i>
+            <h3>Тонировка</h3>
+            <p>Тонировка стёкол, фар, любой процент светопропускания. Качественно.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-couch"></i>
+            <h3>Перешивка салона</h3>
+            <p>Кожа, алькантара, карбон. Индивидуальный дизайн и комфорт.</p>
+          </div>
+          <div class="service-card">
+            <i class="fas fa-window-maximize"></i>
+            <h3>Ремонт стёкол</h3>
+            <p>Шлифовка, полировка, устранение сколов и царапин. Восстановление прозрачности.</p>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 2.5rem; color: #aaa; font-size: 1.2rem;">Выполняем работы любой сложности. Индивидуальный подход к каждому авто.</p>
+      </div>
+    </section>
+
+    <!-- Портфолио (изображения с Pexels, быстро грузятся) -->
+    <section id="portfolio">
+      <div class="container">
+        <h2 class="typing-title"><span class="typing-container"><span class="typing-text"># НАШИ РАБОТЫ</span></span></h2>
+        <div class="portfolio-grid">
+          <div class="portfolio-item">
+            <img src="./deteil.jpg" alt="Детейлинг автомобиля">
+            <div class="portfolio-overlay"><span>Полировка</span></div>
+          </div>
+          <div class="portfolio-item">
+            <img src="./keramika.jpg" alt="Керамическое покрытие">
+            <div class="portfolio-overlay"><span>Керамика</span></div>
+          </div>
+          <div class="portfolio-item">
+            <img src="./him.jpg" alt="Химчистка салона">
+            <div class="portfolio-overlay"><span>Химчистка</span></div>
+          </div>
+          <div class="portfolio-item">
+            <img src="./chist.webp" alt="Чистый автомобиль">
+            <div class="portfolio-overlay"><span>Детейлинг</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- О нас -->
+    <section id="about">
+      <div class="container">
+        <h2 class="typing-title"><span class="typing-container"><span class="typing-text"># О НАС</span></span></h2>
+        <div class="about-text">
+          <p><strong class="red">6 лет</strong> на рынке детейлинга. Мы специализируемся на полном спектре услуг: полировка, керамическое покрытие, химчистка, удаление вмятин (PDR), шумоизоляция, оклейка плёнками (полиуретан, винил), тонировка, перешивка салона, шлифовка и полировка стёкол, устранение сколов и маскировка царапин. Работаем любой сложности — от повседневного ухода до премиального восстановления.</p>
+          <p style="margin-top: 1.5rem;">Каждый проект ведём под ключ, используя профессиональные материалы и оборудование. Ваш автомобиль в надёжных руках.</p>
+        </div>
+        <div class="features">
+          <div class="feature-item">
+            <i class="fas fa-award"></i>
+            <h4>6 лет</h4>
+            <p>успешной работы</p>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-tasks"></i>
+            <h4>>15 видов</h4>
+            <p>услуг любой сложности</p>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-clock"></i>
+            <h4>10:00–20:00</h4>
+            <p>без выходных</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Контакты -->
+    <section id="contacts">
+      <div class="container">
+        <h2 class="typing-title"><span class="typing-container"><span class="typing-text"># КОНТАКТЫ</span></span></h2>
+        <div class="contacts-grid">
+          <div class="contact-card">
+            <i class="fas fa-map-pin"></i>
+            <h4>Адрес</h4>
+            <span>г. Назрань, ул. Суворова 12в</span>
+          </div>
+          <div class="contact-card">
+            <i class="fas fa-phone-alt"></i>
+            <h4>Телефон</h4>
+            <a href="tel:+793701110101">8 (937) 011-10-101</a>
+          </div>
+          <div class="contact-card">
+            <i class="fab fa-whatsapp"></i>
+            <h4>WhatsApp</h4>
+            <a href="https://wa.me/793701110101" target="_blank">Написать в WhatsApp</a>
+          </div>
+          <div class="contact-card">
+            <i class="fab fa-instagram"></i>
+            <h4>Instagram</h4>
+            <a href="https://instagram.com/gaps_ing" target="_blank">@gaps_ing</a>
+          </div>
+        </div>
+        <div class="social-links">
+          <a href="https://wa.me/793701110101" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://instagram.com/gaps_ing" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Подвал -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>GAPS</h4>
+        <p>6 лет безупречного детейлинга в Назрани. Полный спектр услуг любой сложности.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Навигация</h4>
+        <ul>
+          <li><a href="#home">Главная</a></li>
+          <li><a href="#services">Услуги</a></li>
+          <li><a href="#portfolio">Работы</a></li>
+          <li><a href="#about">О нас</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <ul>
+          <li><i class="fas fa-phone" style="color: var(--red); margin-right: 0.5rem;"></i> <a href="tel:+793701110101">8 (937) 011-10-101</a></li>
+          <li><i class="fab fa-whatsapp" style="color: var(--red); margin-right: 0.5rem;"></i> <a href="https://wa.me/793701110101">WhatsApp</a></li>
+          <li><i class="fab fa-instagram" style="color: var(--red); margin-right: 0.5rem;"></i> <a href="https://instagram.com/gaps_ing">@gaps_ing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Часы работы</h4>
+        <p>Ежедневно: 10:00 – 20:00</p>
+        <p>Без выходных</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 GAPS Детейлинг. 6 лет на рынке. г. Назрань, ул. Суворова 12в</p>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      // Прелоадер
+      const preloader = document.getElementById('preloader');
+      const progressFill = document.getElementById('progressFill');
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 1;
+        progressFill.style.width = progress + '%';
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            preloader.classList.add('hidden');
+          }, 300);
+        }
+      }, 18);
+      window.addEventListener('load', function() {
+        if (progress < 100) {
+          clearInterval(interval);
+          progressFill.style.width = '100%';
+          setTimeout(() => {
+            preloader.classList.add('hidden');
+          }, 300);
+        }
+      });
+
+      // Мобильное меню
+      const menuToggle = document.getElementById('menuToggle');
+      const navMenu = document.getElementById('navMenu');
+      const body = document.body;
+      if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+          menuToggle.classList.toggle('active');
+          navMenu.classList.toggle('active');
+          body.classList.toggle('menu-open');
+        });
+      }
+      const navLinks = document.querySelectorAll('.nav-link');
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) {
+            menuToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+            body.classList.remove('menu-open');
+          }
+        });
+      });
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+          navMenu.classList.remove('active');
+          menuToggle.classList.remove('active');
+          body.classList.remove('menu-open');
+        }
+      });
+
+      // Активный пункт меню
+      const sections = document.querySelectorAll('section');
+      window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop - 100;
+          if (pageYOffset >= sectionTop) {
+            current = section.getAttribute('id');
+          }
+        });
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === `#${current}`) {
+            link.classList.add('active');
+          }
+        });
+      });
+
+      // Эффект печати
+      const typingTitles = document.querySelectorAll('.typing-title');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const container = entry.target.querySelector('.typing-container');
+          if (!container) return;
+          if (entry.isIntersecting) {
+            container.style.setProperty('--typing-width', '0%');
+          } else {
+            container.style.setProperty('--typing-width', '100%');
+          }
+        });
+      }, { threshold: 0.3 });
+
+      typingTitles.forEach(title => observer.observe(title));
+      typingTitles.forEach(title => {
+        const container = title.querySelector('.typing-container');
+        if (container) {
+          container.style.setProperty('--typing-width', '100%');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
